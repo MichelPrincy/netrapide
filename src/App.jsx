@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, Square, Trash2, Edit, FileDown, Plus, Monitor, Clock, AlertTriangle, Zap, Sun, Moon, Timer, CreditCard, LayoutDashboard } from 'lucide-react';
+import { 
+  Play, Pause, Square, Trash2, Edit, FileDown, Plus, 
+  Monitor, Clock, AlertCircle, Zap, Sun, Moon, 
+  CreditCard, CheckCircle2, History 
+} from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const TARIF_PAR_HEURE = 500; // Ar
 
 const App = () => {
-  // --- États et Logique (INCHANGÉS) ---
+  // --- ÉTATS (inchangés) ---
   const [sessions, setSessions] = useState(() => {
     const saved = localStorage.getItem('cyberSessions');
     return saved ? JSON.parse(saved) : [];
@@ -14,165 +18,13 @@ const App = () => {
   
   const [inputs, setInputs] = useState({ card: '', motif: 'Payé', timeStr: '' });
   const [editingId, setEditingId] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false); // Par défaut en mode clair (plus pro/classique)
 
   useEffect(() => {
     localStorage.setItem('cyberSessions', JSON.stringify(sessions));
   }, [sessions]);
 
-  // --- STYLES CSS MODERNES ET PROFESSIONNELS ---
-  const styles = `
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
-
-    :root {
-      --primary: ${isDarkMode ? '#3b82f6' : '#2563eb'};
-      --primary-glow: ${isDarkMode ? 'rgba(59, 130, 246, 0.5)' : 'rgba(37, 99, 235, 0.3)'};
-      --bg-app: ${isDarkMode ? '#0f172a' : '#f8fafc'};
-      --bg-card: ${isDarkMode ? '#1e293b' : '#ffffff'};
-      --text-main: ${isDarkMode ? '#f1f5f9' : '#1e293b'};
-      --text-muted: ${isDarkMode ? '#94a3b8' : '#64748b'};
-      --border-color: ${isDarkMode ? '#334155' : '#e2e8f0'};
-      --success: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-    }
-
-    body {
-      background-color: var(--bg-app);
-      color: var(--text-main);
-      font-family: 'Inter', sans-serif;
-      transition: all 0.3s ease;
-      margin: 0;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .dashboard-container {
-      padding: 2rem;
-      max-width: 1600px;
-      margin: 0 auto;
-    }
-
-    /* Cards avec effet Glassmorphism subtil */
-    .pro-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .input-group-custom {
-      background: ${isDarkMode ? '#0f172a' : '#f1f5f9'};
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      width: 100%;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .input-group-custom:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px var(--primary-glow);
-    }
-
-    /* Boutons Modernes */
-    .btn-pro {
-      border-radius: 8px;
-      font-weight: 600;
-      padding: 0.75rem 1.5rem;
-      transition: all 0.2s;
-      border: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), #2563eb);
-      color: white;
-      box-shadow: 0 4px 12px var(--primary-glow);
-    }
-    .btn-primary:hover { filter: brightness(110%); transform: translateY(-1px); }
-
-    .btn-icon {
-      padding: 0.5rem;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-icon:hover { background: var(--bg-app); color: var(--primary); border-color: var(--primary); }
-    .btn-icon.danger:hover { color: var(--danger); border-color: var(--danger); }
-
-    /* Table Design */
-    .table-container {
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid var(--border-color);
-    }
-    
-    .custom-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.95rem;
-    }
-
-    .custom-table th {
-      background: ${isDarkMode ? '#1e293b' : '#f8fafc'};
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.05em;
-      padding: 1rem 1.5rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .custom-table td {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border-color);
-      color: var(--text-main);
-    }
-
-    .custom-table tr:last-child td { border-bottom: none; }
-    .custom-table tr:hover td { background: ${isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)'}; }
-
-    /* Elements Spécifiques */
-    .mono-font { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.5px; }
-    
-    .status-badge {
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    
-    .badge-success { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-    .badge-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-    .badge-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-    .badge-neutral { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); }
-
-    .timer-display {
-      font-size: 1.25rem;
-      font-weight: bold;
-      color: var(--primary);
-      text-shadow: ${isDarkMode ? '0 0 10px rgba(59, 130, 246, 0.4)' : 'none'};
-    }
-    .timer-alert { color: var(--danger); animation: pulse 2s infinite; }
-
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-  `;
-
-  // --- Logique (INCHANGÉE sauf pour le timer) ---
+  // --- LOGIQUE METIER (inchangée mais optimisée) ---
   useEffect(() => {
     const interval = setInterval(() => {
       setSessions(prevSessions => 
@@ -196,19 +48,9 @@ const App = () => {
 
   const triggerAudioAlert = (cardNum) => {
     if (!window.speechSynthesis) return;
-    let count = 0;
-    const maxRepetitions = 1;
-    const speak = () => {
-      if (count >= maxRepetitions) return;
-      const msg = new SpeechSynthesisUtterance(`Carte numéro ${cardNum}, terminé`);
-      msg.lang = 'fr-FR';
-      msg.onend = () => {
-        count++;
-        if (count < maxRepetitions) setTimeout(speak, 5000);
-      };
-      window.speechSynthesis.speak(msg);
-    };
-    speak();
+    const msg = new SpeechSynthesisUtterance(`Le poste numéro ${cardNum} est terminé`);
+    msg.lang = 'fr-FR';
+    window.speechSynthesis.speak(msg);
   };
 
   const parseTime = (str) => {
@@ -218,7 +60,7 @@ const App = () => {
     if (hours) totalSeconds += parseInt(hours[1]) * 3600;
     if (minutes) totalSeconds += parseInt(minutes[1]) * 60;
     if (!hours && !minutes && !isNaN(str) && str.trim() !== '') totalSeconds += parseInt(str) * 60;
-    return totalSeconds > 0 ? totalSeconds : 3600;
+    return totalSeconds > 0 ? totalSeconds : 3600; // Défaut 1h
   };
 
   const formatTime = (seconds) => {
@@ -266,7 +108,7 @@ const App = () => {
   };
 
   const handleExtendTime = (id) => {
-    const timeToAdd = prompt("Ajouter temps (ex: 30m) :");
+    const timeToAdd = prompt("Temps à ajouter (ex: 30m, 1h) :");
     if (!timeToAdd) return;
     const secondsToAdd = parseTime(timeToAdd);
     
@@ -274,13 +116,12 @@ const App = () => {
         if (s.id !== id) return s;
         const newTotal = s.durationTotal + secondsToAdd;
         let newStatus = s.status === 'Terminé' ? 'Actif' : s.status;
-        let newPaused = s.status === 'Terminé' ? false : s.paused;
-        return { ...s, durationTotal: newTotal, status: newStatus, paused: newPaused };
+        return { ...s, durationTotal: newTotal, status: newStatus, paused: false };
     }));
   };
 
   const handleDelete = (id) => {
-    if(confirm('Supprimer cette session ?')) setSessions(sessions.filter(s => s.id !== id));
+    if(confirm('Confirmer la suppression définitive ?')) setSessions(sessions.filter(s => s.id !== id));
   };
 
   const handleEdit = (session) => {
@@ -294,148 +135,324 @@ const App = () => {
     const dailySessions = sessions.filter(s => s.date === today);
     const totalRevenue = dailySessions.reduce((acc, curr) => acc + calculateCost(curr.elapsed), 0);
 
-    doc.setTextColor(37, 99, 235); // Bleu pro
-    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(41, 50, 65);
     doc.text(`Rapport Journalier`, 14, 20);
     
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.setFontSize(11);
-    doc.text(`Cyber Manager - ${today}`, 14, 28);
-    doc.text(`Revenu: ${totalRevenue} Ar`, 14, 34);
+    doc.text(`Date: ${today}`, 14, 26);
+    doc.text(`Total Recette: ${totalRevenue} Ar`, 14, 31);
 
     autoTable(doc, {
       startY: 40,
-      head: [["Carte", "Début", "Motif", "Durée", "Coût", "Status"]],
-      body: dailySessions.map(s => [s.card, s.debut, s.motif, formatTime(s.durationTotal), `${calculateCost(s.elapsed)} Ar`, s.status]),
-      theme: 'striped',
-      headStyles: { fillColor: [37, 99, 235] }
+      head: [["#", "Début", "Type", "Durée", "Coût", "État"]],
+      body: dailySessions.map(s => [
+        s.card, 
+        s.debut, 
+        s.motif, 
+        formatTime(s.durationTotal), 
+        `${calculateCost(s.elapsed)} Ar`, 
+        s.status
+      ]),
+      theme: 'grid',
+      headStyles: { fillColor: [41, 50, 65], textColor: 255 },
+      styles: { fontSize: 9, cellPadding: 3 }
     });
-    doc.save(`Rapport_${today.replace(/\//g, '-')}.pdf`);
+    doc.save(`Rapport_Cyber_${today.replace(/\//g, '-')}.pdf`);
   };
 
-  // Tri
-  const sortedSessions = [
-    ...sessions.filter(s => s.status !== 'Terminé'),
-    ...sessions.filter(s => s.status === 'Terminé')
-  ];
-  
-  const currentTotal = sessions
+  // --- STYLE SYSTEM (CSS-in-JS) ---
+  const colors = {
+    bg: isDarkMode ? '#111827' : '#f3f4f6',
+    cardBg: isDarkMode ? '#1f2937' : '#ffffff',
+    text: isDarkMode ? '#f9fafb' : '#111827',
+    textMuted: isDarkMode ? '#9ca3af' : '#6b7280',
+    primary: '#3b82f6', // Bleu standard professionnel
+    success: '#10b981',
+    danger: '#ef4444',
+    warning: '#f59e0b',
+    border: isDarkMode ? '#374151' : '#e5e7eb',
+    hover: isDarkMode ? '#374151' : '#f9fafb'
+  };
+
+  const styles = `
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    body {
+      background-color: ${colors.bg};
+      color: ${colors.text};
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* HEADER */
+    .header-stat {
+      background: ${colors.cardBg};
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid ${colors.border};
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* INPUT SECTION */
+    .control-panel {
+      background: ${colors.cardBg};
+      border-radius: 12px;
+      border: 1px solid ${colors.border};
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: ${colors.textMuted};
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid ${colors.border};
+      background: ${isDarkMode ? '#374151' : '#fff'};
+      color: ${colors.text};
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .input-field:focus {
+      border-color: ${colors.primary};
+      box-shadow: 0 0 0 3px ${isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)'};
+    }
+
+    /* TABLE */
+    .table-card {
+      background: ${colors.cardBg};
+      border-radius: 12px;
+      border: 1px solid ${colors.border};
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+
+    .clean-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .clean-table th {
+      padding: 1rem 1.5rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: ${colors.textMuted};
+      background: ${isDarkMode ? 'rgba(0,0,0,0.2)' : '#f8fafc'};
+      border-bottom: 1px solid ${colors.border};
+    }
+
+    .clean-table td {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid ${colors.border};
+      vertical-align: middle;
+    }
+
+    .clean-table tr:last-child td { border-bottom: none; }
+    .clean-table tr:hover td { background: ${colors.hover}; }
+
+    /* COMPONENTS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background: ${colors.primary}; color: white; }
+    .btn-primary:hover { filter: brightness(110%); }
+
+    .btn-ghost { background: transparent; color: ${colors.textMuted}; border: 1px solid ${colors.border}; padding: 0.5rem; }
+    .btn-ghost:hover { border-color: ${colors.primary}; color: ${colors.primary}; background: ${isDarkMode ? 'rgba(59,130,246,0.1)' : '#eff6ff'}; }
+    
+    .btn-danger-ghost:hover { border-color: ${colors.danger}; color: ${colors.danger}; background: rgba(239,68,68,0.1); }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .status-active { background: rgba(16, 185, 129, 0.15); color: ${colors.success}; }
+    .status-paused { background: rgba(245, 158, 11, 0.15); color: ${colors.warning}; }
+    .status-done { background: ${isDarkMode ? 'rgba(255,255,255,0.1)' : '#f3f4f6'}; color: ${colors.textMuted}; }
+
+    .card-avatar {
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      background: ${isDarkMode ? '#374151' : '#f1f5f9'};
+      color: ${colors.text};
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Actions row visibility on hover */
+    .row-actions { opacity: 0.3; transition: opacity 0.2s; }
+    .clean-table tr:hover .row-actions { opacity: 1; }
+  `;
+
+  // Tri des sessions : Actifs d'abord
+  const sortedSessions = [...sessions].sort((a, b) => {
+    if (a.status === 'Terminé' && b.status !== 'Terminé') return 1;
+    if (a.status !== 'Terminé' && b.status === 'Terminé') return -1;
+    return b.id - a.id;
+  });
+
+  const todayTotal = sessions
     .filter(s => s.date === new Date().toLocaleDateString())
     .reduce((acc, curr) => acc + calculateCost(curr.elapsed), 0);
 
   return (
-    <div className="dashboard-container">
+    <div className="app-container">
       <style>{styles}</style>
-      
-      {/* HEADER & STATS */}
-      <div className="row mb-4 align-items-center">
-        <div className="col-md-6">
-          <div className="d-flex align-items-center gap-3">
-            <div className={`p-3 rounded-xl shadow-sm ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`}>
-                <LayoutDashboard size={28} className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} />
-            </div>
-            <div>
-              <h1 className="h4 mb-0 fw-bold">Cyber Manager Pro</h1>
-              <div className="d-flex align-items-center gap-2" style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                <span className="d-flex align-items-center gap-1 text-success"><Zap size={12}/> Système Actif</span>
-                <span>•</span>
-                <span>v2.2 Stable</span>
-              </div>
-            </div>
-          </div>
+
+      {/* TOP BAR */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Monitor size={28} color={colors.primary} />
+            Cyber Manager
+          </h1>
+          <p style={{ margin: '5px 0 0 0', color: colors.textMuted, fontSize: '0.9rem' }}>
+            Tableau de bord de gestion
+          </p>
         </div>
 
-        <div className="col-md-6 d-flex justify-content-end align-items-center gap-3">
-          <div className="pro-card px-4 py-2 text-end">
-            <div className="text-uppercase small fw-bold" style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Recette du Jour</div>
-            <div className="fs-4 fw-bold mono-font" style={{ color: 'var(--success)' }}>{currentTotal} Ar</div>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <div className="header-stat">
+            <div style={{display:'flex', flexDirection:'column'}}>
+               <span style={{ fontSize: '0.7rem', textTransform:'uppercase', color: colors.textMuted, fontWeight:'600' }}>Recette du jour</span>
+               <span className="mono" style={{ fontSize: '1.25rem', fontWeight: '700', color: colors.success }}>{todayTotal} Ar</span>
+            </div>
+            <Zap size={20} color={colors.success} fill={colors.success} style={{ opacity: 0.2 }} />
           </div>
-
-          <button onClick={() => setIsDarkMode(!isDarkMode)} className="btn-icon">
-            {isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}
-          </button>
           
-          <button className="btn-pro btn-primary" onClick={exportPDF}>
-            <FileDown size={18} /> Rapport PDF
+          <button className="btn btn-ghost" onClick={() => setIsDarkMode(!isDarkMode)}>
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
         </div>
       </div>
 
-      {/* ACTION BAR (FORMULAIRE) */}
-      <div className="pro-card p-4 mb-4">
-        <div className="d-flex align-items-center gap-2 mb-3">
-            <Clock size={18} className="text-primary" />
-            <h6 className="mb-0 fw-bold text-uppercase" style={{ letterSpacing: '1px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                {editingId ? 'Modification en cours' : 'Nouvelle Session'}
-            </h6>
-        </div>
-        
-        <form onSubmit={handleAddSession} className="row g-3">
-          <div className="col-md-3">
-            <div className="d-flex align-items-center position-relative">
-                <CreditCard size={18} className="position-absolute ms-3 text-muted" />
-                <input 
-                  type="text" 
-                  className="input-group-custom ps-5" 
-                  placeholder="Numéro Carte (ex: 01)"
-                  value={inputs.card}
-                  onChange={e => setInputs({...inputs, card: e.target.value})}
-                  required
-                />
+      {/* ACTION BAR (FORM) */}
+      <div className="control-panel">
+        <form onSubmit={handleAddSession} style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-end' }}>
+          <div style={{ flex: 1 }}>
+            <label className="form-label">Numéro de Poste</label>
+            <div style={{ position: 'relative' }}>
+              <CreditCard size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }} />
+              <input 
+                type="text" 
+                className="input-field" 
+                style={{ paddingLeft: '2.5rem' }}
+                placeholder="Ex: 05"
+                value={inputs.card}
+                onChange={e => setInputs({...inputs, card: e.target.value})}
+                autoFocus
+              />
             </div>
           </div>
-          <div className="col-md-3">
-             <select 
-                className="input-group-custom"
-                value={inputs.motif}
-                onChange={e => setInputs({...inputs, motif: e.target.value})}
-              >
-                <option value="Payé">Payé (Standard)</option>
-                <option value="Impayé">Impayé (Crédit)</option>
-              </select>
-          </div>
-          <div className="col-md-3">
-            <div className="d-flex align-items-center position-relative">
-                <Timer size={18} className="position-absolute ms-3 text-muted" />
-                <input 
-                  type="text" 
-                  className="input-group-custom ps-5" 
-                  placeholder="Temps (ex: 1h, 30m)"
-                  value={inputs.timeStr}
-                  onChange={e => setInputs({...inputs, timeStr: e.target.value})}
-                  required
-                />
+
+          <div style={{ flex: 1 }}>
+            <label className="form-label">Durée</label>
+            <div style={{ position: 'relative' }}>
+              <Clock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }} />
+              <input 
+                type="text" 
+                className="input-field" 
+                style={{ paddingLeft: '2.5rem' }}
+                placeholder="Ex: 1h, 30m"
+                value={inputs.timeStr}
+                onChange={e => setInputs({...inputs, timeStr: e.target.value})}
+              />
             </div>
           </div>
-          <div className="col-md-3">
-            <button type="submit" className="btn-pro btn-primary w-100">
-              {editingId ? <><Edit size={18}/> Mettre à jour</> : <><Plus size={18}/> Démarrer</>}
-            </button>
+
+          <div style={{ width: '200px' }}>
+            <label className="form-label">Type de Paiement</label>
+            <select 
+              className="input-field"
+              value={inputs.motif}
+              onChange={e => setInputs({...inputs, motif: e.target.value})}
+            >
+              <option value="Payé">✅ Payé</option>
+              <option value="Impayé">⚠️ Crédit / Impayé</option>
+            </select>
           </div>
+
+          <button type="submit" className="btn btn-primary" style={{ height: '46px' }}>
+            {editingId ? <><Edit size={18}/> Mettre à jour</> : <><Plus size={18}/> Démarrer Session</>}
+          </button>
         </form>
       </div>
 
-      {/* MAIN TABLE */}
-      <div className="pro-card table-container">
-        <table className="custom-table">
+      {/* TABLE */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: '600', margin: 0 }}>Sessions en cours</h2>
+        <button onClick={exportPDF} className="btn btn-ghost" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}>
+            <FileDown size={16} /> Exporter PDF
+        </button>
+      </div>
+
+      <div className="table-card">
+        <table className="clean-table">
           <thead>
             <tr>
-              <th className="ps-4">Client / Carte</th>
-              <th>Heure Début</th>
-              <th>Paiement</th>
-              <th className="text-center">Chrono</th>
+              <th style={{ width: '80px' }}>Poste</th>
+              <th>Horaire</th>
+              <th>Temps Restant</th>
               <th>Montant</th>
-              <th>État</th>
-              <th className="text-end pe-4">Actions</th>
+              <th>Statut</th>
+              <th style={{ textAlign: 'right', paddingRight: '2rem' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {sortedSessions.length === 0 ? (
               <tr>
-                <td colSpan="7" className="text-center py-5">
-                  <div className="d-flex flex-column align-items-center opacity-50">
-                    <Monitor size={48} className="mb-3" strokeWidth={1} />
-                    <span>Aucune session active</span>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '4rem', color: colors.textMuted }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                    <Monitor size={48} strokeWidth={1} style={{ opacity: 0.3 }} />
+                    <span>Aucune session active pour le moment.</span>
                   </div>
                 </td>
               </tr>
@@ -446,58 +463,76 @@ const App = () => {
                 
                 return (
                   <tr key={session.id} style={{ opacity: isFinished ? 0.6 : 1 }}>
-                    <td className="ps-4">
-                      <div className="d-flex align-items-center gap-3">
-                        <div className={`rounded-circle p-2 d-flex align-items-center justify-content-center fw-bold ${isDarkMode ? 'bg-gray-800' : 'bg-gray-200'}`} style={{ width: '40px', height: '40px' }}>
-                            {session.card}
-                        </div>
+                    {/* Colonne Poste */}
+                    <td>
+                      <div className="card-avatar">
+                        {session.card}
                       </div>
                     </td>
-                    <td className="mono-font text-muted">{session.debut}</td>
+
+                    {/* Colonne Horaire */}
                     <td>
-                        <span className={`status-badge ${session.motif === 'Payé' ? 'badge-success' : 'badge-danger'}`}>
-                            {session.motif}
-                        </span>
+                      <div style={{ fontWeight: '500' }}>{session.debut}</div>
+                      <div style={{ fontSize: '0.8rem', color: colors.textMuted }}>{session.motif}</div>
                     </td>
-                    <td className="text-center">
-                      <span className={`mono-font timer-display ${remaining < 60 && !isFinished ? 'timer-alert' : ''}`}>
-                        {isFinished ? 'Terminé' : formatTime(remaining)}
+
+                    {/* Colonne Temps */}
+                    <td>
+                      <div className="mono" style={{ 
+                        fontSize: '1.1rem', 
+                        fontWeight: '600',
+                        color: remaining < 300 && !isFinished ? colors.danger : colors.text 
+                      }}>
+                        {isFinished ? '00:00:00' : formatTime(remaining)}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: colors.textMuted }}>
+                         Total: {formatTime(session.durationTotal)}
+                      </div>
+                    </td>
+
+                    {/* Colonne Montant */}
+                    <td>
+                      <span className="mono" style={{ fontWeight: '600' }}>
+                        {calculateCost(session.elapsed)} Ar
                       </span>
                     </td>
-                    <td className="fw-bold mono-font text-success">
-                      {calculateCost(session.elapsed)} Ar
-                    </td>
+
+                    {/* Colonne Statut */}
                     <td>
                         {isFinished ? (
-                           <span className="status-badge badge-neutral">Offline</span>
+                           <span className="status-pill status-done"><CheckCircle2 size={12}/> Terminé</span>
                         ) : session.paused ? (
-                           <span className="status-badge badge-warning">Pause</span>
+                           <span className="status-pill status-paused"><Pause size={12}/> Pause</span>
                         ) : (
-                           <span className="status-badge badge-success">En Ligne</span>
+                           <span className="status-pill status-active"><ActivityIndicator/> En ligne</span>
                         )}
                     </td>
-                    <td className="text-end pe-4">
-                      <div className="d-flex justify-content-end gap-1">
-                        <button className="btn-icon text-success" onClick={() => handleExtendTime(session.id)} title="Ajouter temps">
-                           <Plus size={16} />
-                        </button>
+
+                    {/* Colonne Actions */}
+                    <td style={{ textAlign: 'right' }}>
+                      <div className="row-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                         
+                        <button className="btn btn-ghost" title="Ajouter du temps" onClick={() => handleExtendTime(session.id)}>
+                            <Plus size={16} />
+                        </button>
+
                         {!isFinished && (
-                            <>
-                                <button className="btn-icon" onClick={() => handleAction(session.id, 'pause')} title={session.paused ? "Reprendre" : "Pause"}>
-                                    {session.paused ? <Play size={16} /> : <Pause size={16} />}
-                                </button>
-                                <button className="btn-icon danger" onClick={() => handleAction(session.id, 'stop')} title="Arrêter">
-                                    <Square size={16} />
-                                </button>
-                            </>
+                          <>
+                            <button className="btn btn-ghost" onClick={() => handleAction(session.id, 'pause')} title={session.paused ? "Reprendre" : "Pause"}>
+                              {session.paused ? <Play size={16} /> : <Pause size={16} />}
+                            </button>
+                            <button className="btn btn-ghost btn-danger-ghost" onClick={() => handleAction(session.id, 'stop')} title="Arrêter">
+                              <Square size={16} />
+                            </button>
+                          </>
                         )}
                         
-                        <button className="btn-icon" onClick={() => handleEdit(session)}>
-                            <Edit size={16} />
+                        <button className="btn btn-ghost" onClick={() => handleEdit(session)} title="Modifier">
+                          <Edit size={16} />
                         </button>
-                        <button className="btn-icon danger" onClick={() => handleDelete(session.id)}>
-                            <Trash2 size={16} />
+                        
+                        <button className="btn btn-ghost btn-danger-ghost" onClick={() => handleDelete(session.id)} title="Supprimer">
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -511,5 +546,18 @@ const App = () => {
     </div>
   );
 };
+
+// Petit composant pour l'animation du point vert
+const ActivityIndicator = () => (
+    <span style={{ position: 'relative', display: 'flex', height: '8px', width: '8px' }}>
+      <span style={{ 
+        position: 'absolute', display: 'inline-flex', height: '100%', width: '100%', 
+        borderRadius: '50%', backgroundColor: '#10b981', opacity: 0.75,
+        animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' 
+      }}></span>
+      <span style={{ position: 'relative', display: 'inline-flex', borderRadius: '50%', height: '8px', width: '8px', backgroundColor: '#10b981' }}></span>
+      <style>{`@keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }`}</style>
+    </span>
+);
 
 export default App;
