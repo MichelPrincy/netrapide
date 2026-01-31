@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  background-color: #0f172a; /* Slate 900 */
+  color: #f1f5f9;
+}
+
+/* Animation pour le status actif */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; text-shadow: 0 0 10px #22c55e; }
+  50% { opacity: 0.7; }
+}
+.animate-glow {
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

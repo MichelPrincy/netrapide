@@ -1,0 +1,13 @@
+body {
+  background-color: #212529;
+  color: #f8f9fa;
+}
+/* Animation personnalisée pour le status actif */
+@keyframes pulse-green {
+  0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+.status-active-pulse {
+  animation: pulse-green 2s infinite;
+}
