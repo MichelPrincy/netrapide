@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, Square, Trash2, Edit, FileDown, Plus, Monitor, Clock, AlertTriangle, Zap, Sun, Moon, Timer } from 'lucide-react';
+import { Play, Pause, Square, Trash2, Edit, FileDown, Plus, Monitor, Clock, AlertTriangle, Zap, Sun, Moon, Timer, CreditCard, LayoutDashboard } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const TARIF_PAR_HEURE = 500; // Ar
 
 const App = () => {
-  // --- États et Logique ---
+  // --- États et Logique (INCHANGÉS) ---
   const [sessions, setSessions] = useState(() => {
     const saved = localStorage.getItem('cyberSessions');
     return saved ? JSON.parse(saved) : [];
@@ -14,58 +14,165 @@ const App = () => {
   
   const [inputs, setInputs] = useState({ card: '', motif: 'Payé', timeStr: '' });
   const [editingId, setEditingId] = useState(null);
-  
-  // --- NOUVEAU : État pour le thème ---
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   useEffect(() => {
     localStorage.setItem('cyberSessions', JSON.stringify(sessions));
   }, [sessions]);
 
-  // --- Styles Cyberpunk (Dark) ---
-  const darkStyles = `
-    body { background-color: #050505; color: #00f3ff; }
-    .cyber-card { background: rgba(16, 20, 24, 0.9); border: 1px solid #00f3ff; box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); }
-    .cyber-input { background: #000 !important; border: 1px solid #333 !important; color: #00f3ff !important; }
-    .cyber-btn-primary { border: 1px solid #00f3ff; color: #00f3ff; }
-    .cyber-btn-primary:hover { background: #00f3ff; color: #000; box-shadow: 0 0 20px #00f3ff; }
-    .cyber-table-head { background-color: #1a1a1a; color: #d600ff; text-shadow: 0 0 5px #d600ff; }
-    .main-bg { background-color: #050505; }
-    .text-dynamic { color: #00f3ff; }
-    .border-dynamic { border-color: #333 !important; }
+  // --- STYLES CSS MODERNES ET PROFESSIONNELS ---
+  const styles = `
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+    :root {
+      --primary: ${isDarkMode ? '#3b82f6' : '#2563eb'};
+      --primary-glow: ${isDarkMode ? 'rgba(59, 130, 246, 0.5)' : 'rgba(37, 99, 235, 0.3)'};
+      --bg-app: ${isDarkMode ? '#0f172a' : '#f8fafc'};
+      --bg-card: ${isDarkMode ? '#1e293b' : '#ffffff'};
+      --text-main: ${isDarkMode ? '#f1f5f9' : '#1e293b'};
+      --text-muted: ${isDarkMode ? '#94a3b8' : '#64748b'};
+      --border-color: ${isDarkMode ? '#334155' : '#e2e8f0'};
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    body {
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease;
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .dashboard-container {
+      padding: 2rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    /* Cards avec effet Glassmorphism subtil */
+    .pro-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .input-group-custom {
+      background: ${isDarkMode ? '#0f172a' : '#f1f5f9'};
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-group-custom:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+
+    /* Boutons Modernes */
+    .btn-pro {
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+      transition: all 0.2s;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      color: white;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-primary:hover { filter: brightness(110%); transform: translateY(-1px); }
+
+    .btn-icon {
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover { background: var(--bg-app); color: var(--primary); border-color: var(--primary); }
+    .btn-icon.danger:hover { color: var(--danger); border-color: var(--danger); }
+
+    /* Table Design */
+    .table-container {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+    
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    .custom-table th {
+      background: ${isDarkMode ? '#1e293b' : '#f8fafc'};
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      padding: 1rem 1.5rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .custom-table td {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+
+    .custom-table tr:last-child td { border-bottom: none; }
+    .custom-table tr:hover td { background: ${isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)'}; }
+
+    /* Elements Spécifiques */
+    .mono-font { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.5px; }
+    
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .badge-success { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .badge-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+    .badge-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    .badge-neutral { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); }
+
+    .timer-display {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: var(--primary);
+      text-shadow: ${isDarkMode ? '0 0 10px rgba(59, 130, 246, 0.4)' : 'none'};
+    }
+    .timer-alert { color: var(--danger); animation: pulse 2s infinite; }
+
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
   `;
 
-  // --- NOUVEAU : Styles Light Mode ---
-  const lightStyles = `
-    body { background-color: #f0f2f5; color: #0056b3; }
-    .cyber-card { background: #ffffff; border: 1px solid #0056b3; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-    .cyber-input { background: #fff !important; border: 1px solid #ccc !important; color: #000 !important; }
-    .cyber-btn-primary { border: 1px solid #0056b3; color: #0056b3; }
-    .cyber-btn-primary:hover { background: #0056b3; color: #fff; box-shadow: 0 0 10px rgba(0, 86, 179, 0.5); }
-    .cyber-table-head { background-color: #e9ecef; color: #d600ff; }
-    .main-bg { background-color: #f0f2f5; }
-    .text-dynamic { color: #333; }
-    .border-dynamic { border-color: #ddd !important; }
-    /* Overrides for visibility in light mode */
-    .table-hover tbody tr:hover { background-color: rgba(0,0,0,0.05); }
-    .text-white { color: #333 !important; } 
-    .bg-dark { background-color: #e2e6ea !important; color: #000 !important; border-color: #ccc !important; }
-  `;
-
-  // --- Base Styles (Commun) ---
-  const commonStyles = `
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-    body { font-family: 'Share Tech Mono', monospace; transition: background 0.3s ease; }
-    .cyber-input { font-family: 'Share Tech Mono', monospace; }
-    .cyber-input:focus { border-color: #d600ff !important; box-shadow: 0 0 8px rgba(214, 0, 255, 0.5) !important; }
-    .cyber-btn-primary { background: transparent; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s ease; }
-    .cyber-btn-danger { border: 1px solid #ff0055; color: #ff0055; background: transparent; }
-    .cyber-btn-danger:hover { background: #ff0055; color: #fff; box-shadow: 0 0 15px #ff0055; }
-    @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 0, 85, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); } }
-    .status-alert { animation: pulse-red 2s infinite; color: #ff0055; font-weight: bold; }
-    .neon-text { text-shadow: 0 0 5px currentColor; }
-  `;
-
+  // --- Logique (INCHANGÉE sauf pour le timer) ---
   useEffect(() => {
     const interval = setInterval(() => {
       setSessions(prevSessions => 
@@ -91,18 +198,13 @@ const App = () => {
     if (!window.speechSynthesis) return;
     let count = 0;
     const maxRepetitions = 1;
-    const delayBetween = 5000;
     const speak = () => {
       if (count >= maxRepetitions) return;
-      const text = `Carte numéro ${cardNum}, Votre temps de connexion est terminé`;
-      const msg = new SpeechSynthesisUtterance(text);
+      const msg = new SpeechSynthesisUtterance(`Carte numéro ${cardNum}, terminé`);
       msg.lang = 'fr-FR';
-      msg.rate = 0.9;
       msg.onend = () => {
         count++;
-        if (count < maxRepetitions) {
-          setTimeout(() => { speak(); }, delayBetween);
-        }
+        if (count < maxRepetitions) setTimeout(speak, 5000);
       };
       window.speechSynthesis.speak(msg);
     };
@@ -126,9 +228,7 @@ const App = () => {
     return `${h}:${m}:${s}`;
   };
 
-  const calculateCost = (seconds) => {
-    return Math.ceil((seconds / 3600) * TARIF_PAR_HEURE);
-  };
+  const calculateCost = (seconds) => Math.ceil((seconds / 3600) * TARIF_PAR_HEURE);
 
   const handleAddSession = (e) => {
     e.preventDefault();
@@ -165,39 +265,22 @@ const App = () => {
     }));
   };
 
-  // --- NOUVEAU : Fonction pour Ajouter du Temps ---
   const handleExtendTime = (id) => {
-    const timeToAdd = prompt("Ajouter combien de temps ? (ex: 1h, 30m, 15)");
+    const timeToAdd = prompt("Ajouter temps (ex: 30m) :");
     if (!timeToAdd) return;
-    
     const secondsToAdd = parseTime(timeToAdd);
     
     setSessions(sessions.map(s => {
         if (s.id !== id) return s;
-        
-        // On recalcule le total
         const newTotal = s.durationTotal + secondsToAdd;
-        
-        // Si la session était terminée, on la réactive
-        let newStatus = s.status;
-        let newPaused = s.paused;
-        
-        if (s.status === 'Terminé') {
-            newStatus = 'Actif';
-            newPaused = false; // On relance automatiquement si on ajoute du temps
-        }
-
-        return { 
-            ...s, 
-            durationTotal: newTotal,
-            status: newStatus,
-            paused: newPaused
-        };
+        let newStatus = s.status === 'Terminé' ? 'Actif' : s.status;
+        let newPaused = s.status === 'Terminé' ? false : s.paused;
+        return { ...s, durationTotal: newTotal, status: newStatus, paused: newPaused };
     }));
   };
 
   const handleDelete = (id) => {
-    if(confirm('SUPPRIMER LA SESSION ?')) setSessions(sessions.filter(s => s.id !== id));
+    if(confirm('Supprimer cette session ?')) setSessions(sessions.filter(s => s.id !== id));
   };
 
   const handleEdit = (session) => {
@@ -211,239 +294,219 @@ const App = () => {
     const dailySessions = sessions.filter(s => s.date === today);
     const totalRevenue = dailySessions.reduce((acc, curr) => acc + calculateCost(curr.elapsed), 0);
 
-    doc.setTextColor(0, 102, 204); 
+    doc.setTextColor(37, 99, 235); // Bleu pro
     doc.setFontSize(22);
-    doc.text(`RAPPORT CYBER MANAGER`, 14, 20);
+    doc.text(`Rapport Journalier`, 14, 20);
     
     doc.setTextColor(100);
-    doc.setFontSize(12);
-    doc.text(`Date: ${today} | Revenu Total: ${totalRevenue} Ar`, 14, 30);
-
-    const tableColumn = ["Carte", "Début", "Motif", "Durée", "Coût", "Status"];
-    const tableRows = dailySessions.map(s => [
-      s.card, s.debut, s.motif, formatTime(s.durationTotal), `${calculateCost(s.elapsed)} Ar`, s.status
-    ]);
+    doc.setFontSize(11);
+    doc.text(`Cyber Manager - ${today}`, 14, 28);
+    doc.text(`Revenu: ${totalRevenue} Ar`, 14, 34);
 
     autoTable(doc, {
       startY: 40,
-      head: [tableColumn],
-      body: tableRows,
-      theme: 'grid',
-      headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [240, 248, 255] },
-      styles: { fontSize: 10, cellPadding: 3 }
+      head: [["Carte", "Début", "Motif", "Durée", "Coût", "Status"]],
+      body: dailySessions.map(s => [s.card, s.debut, s.motif, formatTime(s.durationTotal), `${calculateCost(s.elapsed)} Ar`, s.status]),
+      theme: 'striped',
+      headStyles: { fillColor: [37, 99, 235] }
     });
-
-    doc.save(`rapport_cyber_${today.replace(/\//g, '-')}.pdf`);
+    doc.save(`Rapport_${today.replace(/\//g, '-')}.pdf`);
   };
 
+  // Tri
+  const sortedSessions = [
+    ...sessions.filter(s => s.status !== 'Terminé'),
+    ...sessions.filter(s => s.status === 'Terminé')
+  ];
+  
   const currentTotal = sessions
     .filter(s => s.date === new Date().toLocaleDateString())
     .reduce((acc, curr) => acc + calculateCost(curr.elapsed), 0);
 
-  // --- NOUVEAU : Logique de Tri (Sorting) ---
-  // Online/Actif/Pause en premier, Terminé en bas
-  const activeSessions = sessions.filter(s => s.status !== 'Terminé');
-  const finishedSessions = sessions.filter(s => s.status === 'Terminé');
-  const sortedSessions = [...activeSessions, ...finishedSessions];
-
   return (
-    <div className="container-fluid min-vh-100 py-4 main-bg">
-      <style>{commonStyles}</style>
-      <style>{isDarkMode ? darkStyles : lightStyles}</style>
+    <div className="dashboard-container">
+      <style>{styles}</style>
       
-      {/* HEADER */}
-      <header className="row mb-4 align-items-center cyber-card p-4 rounded mx-1">
-        <div className="col-md-5 d-flex align-items-center gap-3">
-          <div className="p-3 rounded border border-info shadow-lg" style={{ background: 'rgba(0, 243, 255, 0.1)' }}>
-            <Monitor size={32} className="text-info" />
-          </div>
-          <div>
-            <h1 className="h3 mb-0 neon-text fw-bold text-uppercase" style={{ letterSpacing: '4px' }}>CYBER MANAGER NETRAPIDE <span className="text-muted fs-6">v2.1</span></h1>
-            <div className="d-flex align-items-center gap-2 text-secondary">
-              <Zap size={14} className="text-warning" />
-              <small className="font-monospace">SYSTEM: ONLINE</small>
+      {/* HEADER & STATS */}
+      <div className="row mb-4 align-items-center">
+        <div className="col-md-6">
+          <div className="d-flex align-items-center gap-3">
+            <div className={`p-3 rounded-xl shadow-sm ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`}>
+                <LayoutDashboard size={28} className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} />
+            </div>
+            <div>
+              <h1 className="h4 mb-0 fw-bold">Cyber Manager Pro</h1>
+              <div className="d-flex align-items-center gap-2" style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                <span className="d-flex align-items-center gap-1 text-success"><Zap size={12}/> Système Actif</span>
+                <span>•</span>
+                <span>v2.2 Stable</span>
+              </div>
             </div>
           </div>
         </div>
-        
-        {/* NOUVEAU : Toggle Dark/Light Mode */}
-        <div className="col-md-2 text-center">
-            <button 
-                onClick={() => setIsDarkMode(!isDarkMode)} 
-                className="btn btn-sm border rounded-pill px-3"
-                style={{ borderColor: isDarkMode ? '#00f3ff' : '#0056b3', color: isDarkMode ? '#00f3ff' : '#0056b3' }}
-            >
-                {isDarkMode ? <div className="d-flex align-items-center gap-2"><Sun size={16}/> Light</div> : <div className="d-flex align-items-center gap-2"><Moon size={16}/> Dark</div>}
-            </button>
-        </div>
 
-        <div className="col-md-5 d-flex justify-content-end align-items-center gap-4">
-          <div className="text-end">
-            <div className="text-uppercase text-secondary" style={{ fontSize: '0.75rem', letterSpacing: '2px' }}>RECETTE DU JOUR</div>
-            <div className="h2 mb-0 fw-bold neon-text" style={{ color: '#00ff00' }}>{currentTotal} <span className="fs-5">Ar</span></div>
+        <div className="col-md-6 d-flex justify-content-end align-items-center gap-3">
+          <div className="pro-card px-4 py-2 text-end">
+            <div className="text-uppercase small fw-bold" style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Recette du Jour</div>
+            <div className="fs-4 fw-bold mono-font" style={{ color: 'var(--success)' }}>{currentTotal} Ar</div>
           </div>
-          <button className="btn cyber-btn-primary d-flex align-items-center gap-2 px-4 py-2" onClick={exportPDF}>
-            <FileDown size={20} /> EXPORT
+
+          <button onClick={() => setIsDarkMode(!isDarkMode)} className="btn-icon">
+            {isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}
           </button>
-        </div>
-      </header>
-
-      {/* FORMULAIRE */}
-      <div className="cyber-card mb-4 mx-1 rounded">
-        <div className="card-header bg-transparent d-flex align-items-center gap-2 p-3 border-dynamic" style={{ borderBottom: '1px solid' }}>
-          <Clock size={20} color="#d600ff" />
-          <span className="fw-bold text-uppercase" style={{ color: '#d600ff', letterSpacing: '2px' }}>
-            {editingId ? 'MODIFICATION SESSION' : 'NOUVELLE SESSION'}
-          </span>
-        </div>
-        <div className="card-body p-4">
-          <form onSubmit={handleAddSession} className="row g-3 align-items-end">
-            <div className="col-md-3">
-              <label className="form-label text-info small text-uppercase">N° Carte</label>
-              <input 
-                type="text" 
-                className="form-control form-control-lg cyber-input"
-                placeholder="01"
-                value={inputs.card}
-                onChange={e => setInputs({...inputs, card: e.target.value})}
-                required
-              />
-            </div>
-            <div className="col-md-3">
-              <label className="form-label text-info small text-uppercase">Motif</label>
-              <select 
-                className="form-select form-select-lg cyber-input"
-                value={inputs.motif}
-                onChange={e => setInputs({...inputs, motif: e.target.value})}
-              >
-                <option value="Payé">Payé</option>
-                <option value="Impayé">Impayé</option>
-              </select>
-            </div>
-            <div className="col-md-3">
-              <label className="form-label text-info small text-uppercase">Temps (1h, 30m)</label>
-              <input 
-                type="text" 
-                className="form-control form-control-lg cyber-input"
-                placeholder="1h 30m"
-                value={inputs.timeStr}
-                onChange={e => setInputs({...inputs, timeStr: e.target.value})}
-                required
-              />
-            </div>
-            <div className="col-md-3">
-              <button 
-                type="submit" 
-                className="btn btn-lg w-100 d-flex align-items-center justify-center gap-2 cyber-btn-primary"
-                style={{ borderColor: editingId ? '#ffae00' : (isDarkMode ? '#00f3ff' : '#0056b3'), color: editingId ? '#ffae00' : (isDarkMode ? '#00f3ff' : '#0056b3') }}
-              >
-                {editingId ? <Edit size={20}/> : <Plus size={20}/>}
-                {editingId ? 'UPDATE' : 'START'}
-              </button>
-            </div>
-          </form>
+          
+          <button className="btn-pro btn-primary" onClick={exportPDF}>
+            <FileDown size={18} /> Rapport PDF
+          </button>
         </div>
       </div>
 
-      {/* TABLEAU */}
-      <div className="cyber-card mx-1 rounded overflow-hidden">
-        <div className="table-responsive">
-          <table className="table table-hover mb-0 align-middle" style={{ backgroundColor: 'transparent', color: isDarkMode ? 'white' : 'black' }}>
-            <thead className="cyber-table-head">
-              <tr className="text-uppercase small" style={{ letterSpacing: '1px' }}>
-                <th className="py-3 ps-4 border-dynamic">Carte</th>
-                <th className="py-3 border-dynamic">Début</th>
-                <th className="py-3 border-dynamic">Motif</th>
-                <th className="py-3 text-center border-dynamic">Compteur</th>
-                <th className="py-3 border-dynamic">Coût</th>
-                <th className="py-3 border-dynamic">Status</th>
-                <th className="py-3 text-end pe-4 border-dynamic">Commandes</th>
-              </tr>
-            </thead>
-            <tbody style={{ borderTop: 'none' }}>
-              {sortedSessions.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="text-center py-5 text-secondary border-0">
-                    <AlertTriangle size={40} className="mb-3 opacity-50" />
-                    <div className="font-monospace">AUCUNE DONNÉE DANS LE SYSTÈME</div>
-                  </td>
-                </tr>
-              ) : (
-                sortedSessions.map(session => {
-                  const remaining = session.durationTotal - session.elapsed;
-                  const isFinished = session.status === 'Terminé';
-                  
-                  return (
-                    <tr key={session.id} className={isFinished ? 'opacity-50' : ''} style={{ borderBottom: isDarkMode ? '1px solid #333' : '1px solid #ddd' }}>
-                      <td className="ps-4 fw-bold fs-5 text-dynamic" style={{ fontFamily: 'sans-serif' }}>
-                        <span className="badge bg-dark border border-secondary text-white">{session.card}</span>
-                      </td>
-                      <td className="text-secondary font-monospace">{session.debut}</td>
-                      <td>
-                        <span className={`badge rounded-0 text-uppercase ${session.motif === 'Payé' ? 'bg-success text-black' : 'bg-danger text-white'}`}>
-                          {session.motif}
-                        </span>
-                      </td>
-                      <td className="text-center">
-                        <span className={`font-monospace fs-4 ${remaining < 60 && !isFinished ? 'status-alert' : 'text-info'}`} style={{ textShadow: '0 0 5px rgba(0,243,255,0.5)' }}>
-                          {isFinished ? '00:00:00' : formatTime(remaining)}
-                        </span>
-                      </td>
-                      <td className="fw-bold" style={{ color: '#00ff00' }}>
-                        {calculateCost(session.elapsed)} Ar
-                      </td>
-                      <td>
-                        {isFinished ? (
-                          <span className="badge bg-secondary rounded-0 text-dark">OFFLINE</span>
-                        ) : (
-                          <span className={`badge rounded-0 ${session.paused ? 'bg-warning text-dark' : 'bg-primary text-black'}`}>
-                            {session.paused ? 'PAUSE' : 'ONLINE'}
-                          </span>
-                        )}
-                      </td>
-                      <td className="text-end pe-4">
-                        <div className="btn-group btn-group-sm" role="group">
-                           {/* NOUVEAU BOUTON : AJOUTER TEMPS */}
-                           <button 
-                             className="btn btn-outline-success me-1" 
-                             title="Ajouter du temps"
-                             onClick={() => handleExtendTime(session.id)}
-                           >
-                             <Timer size={14} className="me-1"/>+
-                           </button>
-
-                          {!isFinished && (
-                            <>
-                              <button 
-                                className={`btn ${session.paused ? 'btn-outline-info' : 'btn-outline-light'}`}
-                                onClick={() => handleAction(session.id, 'pause')}
-                              >
-                                {session.paused ? <Play size={14} /> : <Pause size={14} />}
-                              </button>
-                              <button 
-                                className="btn cyber-btn-danger"
-                                onClick={() => handleAction(session.id, 'stop')}
-                              >
-                                <Square size={14} />
-                              </button>
-                            </>
-                          )}
-                          <button className="btn btn-outline-warning" onClick={() => handleEdit(session)}>
-                            <Edit size={14} />
-                          </button>
-                          <button className="btn btn-outline-secondary" onClick={() => handleDelete(session.id)}>
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+      {/* ACTION BAR (FORMULAIRE) */}
+      <div className="pro-card p-4 mb-4">
+        <div className="d-flex align-items-center gap-2 mb-3">
+            <Clock size={18} className="text-primary" />
+            <h6 className="mb-0 fw-bold text-uppercase" style={{ letterSpacing: '1px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                {editingId ? 'Modification en cours' : 'Nouvelle Session'}
+            </h6>
         </div>
+        
+        <form onSubmit={handleAddSession} className="row g-3">
+          <div className="col-md-3">
+            <div className="d-flex align-items-center position-relative">
+                <CreditCard size={18} className="position-absolute ms-3 text-muted" />
+                <input 
+                  type="text" 
+                  className="input-group-custom ps-5" 
+                  placeholder="Numéro Carte (ex: 01)"
+                  value={inputs.card}
+                  onChange={e => setInputs({...inputs, card: e.target.value})}
+                  required
+                />
+            </div>
+          </div>
+          <div className="col-md-3">
+             <select 
+                className="input-group-custom"
+                value={inputs.motif}
+                onChange={e => setInputs({...inputs, motif: e.target.value})}
+              >
+                <option value="Payé">Payé (Standard)</option>
+                <option value="Impayé">Impayé (Crédit)</option>
+              </select>
+          </div>
+          <div className="col-md-3">
+            <div className="d-flex align-items-center position-relative">
+                <Timer size={18} className="position-absolute ms-3 text-muted" />
+                <input 
+                  type="text" 
+                  className="input-group-custom ps-5" 
+                  placeholder="Temps (ex: 1h, 30m)"
+                  value={inputs.timeStr}
+                  onChange={e => setInputs({...inputs, timeStr: e.target.value})}
+                  required
+                />
+            </div>
+          </div>
+          <div className="col-md-3">
+            <button type="submit" className="btn-pro btn-primary w-100">
+              {editingId ? <><Edit size={18}/> Mettre à jour</> : <><Plus size={18}/> Démarrer</>}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* MAIN TABLE */}
+      <div className="pro-card table-container">
+        <table className="custom-table">
+          <thead>
+            <tr>
+              <th className="ps-4">Client / Carte</th>
+              <th>Heure Début</th>
+              <th>Paiement</th>
+              <th className="text-center">Chrono</th>
+              <th>Montant</th>
+              <th>État</th>
+              <th className="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedSessions.length === 0 ? (
+              <tr>
+                <td colSpan="7" className="text-center py-5">
+                  <div className="d-flex flex-column align-items-center opacity-50">
+                    <Monitor size={48} className="mb-3" strokeWidth={1} />
+                    <span>Aucune session active</span>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              sortedSessions.map(session => {
+                const remaining = session.durationTotal - session.elapsed;
+                const isFinished = session.status === 'Terminé';
+                
+                return (
+                  <tr key={session.id} style={{ opacity: isFinished ? 0.6 : 1 }}>
+                    <td className="ps-4">
+                      <div className="d-flex align-items-center gap-3">
+                        <div className={`rounded-circle p-2 d-flex align-items-center justify-content-center fw-bold ${isDarkMode ? 'bg-gray-800' : 'bg-gray-200'}`} style={{ width: '40px', height: '40px' }}>
+                            {session.card}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="mono-font text-muted">{session.debut}</td>
+                    <td>
+                        <span className={`status-badge ${session.motif === 'Payé' ? 'badge-success' : 'badge-danger'}`}>
+                            {session.motif}
+                        </span>
+                    </td>
+                    <td className="text-center">
+                      <span className={`mono-font timer-display ${remaining < 60 && !isFinished ? 'timer-alert' : ''}`}>
+                        {isFinished ? 'Terminé' : formatTime(remaining)}
+                      </span>
+                    </td>
+                    <td className="fw-bold mono-font text-success">
+                      {calculateCost(session.elapsed)} Ar
+                    </td>
+                    <td>
+                        {isFinished ? (
+                           <span className="status-badge badge-neutral">Offline</span>
+                        ) : session.paused ? (
+                           <span className="status-badge badge-warning">Pause</span>
+                        ) : (
+                           <span className="status-badge badge-success">En Ligne</span>
+                        )}
+                    </td>
+                    <td className="text-end pe-4">
+                      <div className="d-flex justify-content-end gap-1">
+                        <button className="btn-icon text-success" onClick={() => handleExtendTime(session.id)} title="Ajouter temps">
+                           <Plus size={16} />
+                        </button>
+                        
+                        {!isFinished && (
+                            <>
+                                <button className="btn-icon" onClick={() => handleAction(session.id, 'pause')} title={session.paused ? "Reprendre" : "Pause"}>
+                                    {session.paused ? <Play size={16} /> : <Pause size={16} />}
+                                </button>
+                                <button className="btn-icon danger" onClick={() => handleAction(session.id, 'stop')} title="Arrêter">
+                                    <Square size={16} />
+                                </button>
+                            </>
+                        )}
+                        
+                        <button className="btn-icon" onClick={() => handleEdit(session)}>
+                            <Edit size={16} />
+                        </button>
+                        <button className="btn-icon danger" onClick={() => handleDelete(session.id)}>
+                            <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
