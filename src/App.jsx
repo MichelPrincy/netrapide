@@ -170,7 +170,7 @@ const App = () => {
     cardBg: isDarkMode ? '#1f2937' : '#ffffff',
     text: isDarkMode ? '#f9fafb' : '#111827',
     textMuted: isDarkMode ? '#9ca3af' : '#6b7280',
-    primary: '#3b82f6', // Bleu standard professionnel
+    primary: '#d442f5', // Bleu standard professionnel
     success: '#10b981',
     danger: '#ef4444',
     warning: '#f59e0b',
@@ -345,6 +345,8 @@ const App = () => {
 
   return (
     <div className="app-container">
+    <div className="wave-bg"></div>
+
       <style>{styles}</style>
 
       {/* TOP BAR */}
